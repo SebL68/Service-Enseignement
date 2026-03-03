@@ -5,13 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service prévisionnel</title>
     <style>
-
+        .module {
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: 4px;
+            width: fit-content;
+            margin-bottom: 4px;
+        }
+        [type=number] {
+            width: 40px;
+        }
     </style>
 </head>
 <body>
     <main>
-        
+
+        <div class="modules">
+            <div class="module">
+                <input type="text">
+                <input type="number" min="0" value="0" name="CM">
+                <input type="number" min="0" value="0" name="TD">
+                <input type="number" min="0" value="0" name="TP">
+            </div>
+            <div class="module">
+                <input type="text">
+                <input type="number" min="0" value="0" name="CM">
+                <input type="number" min="0" value="0" name="TD">
+                <input type="number" min="0" value="0" name="TP">
+            </div>
+            <div class="module">
+                <input type="text">
+                <input type="number" min="0" value="0" name="CM">
+                <input type="number" min="0" value="0" name="TD">
+                <input type="number" min="0" value="0" name="TP">
+            </div>
+        </div>
+
+        <div class="totaux">
+            <div class="CM"></div>
+            <div class="TD"></div>
+            <div class="TP"></div>
+        </div>
+
     </main>
-    <script></script>
+    <script>
+        document.querySelectorAll(".module>input").forEach(e=>{
+            e.addEventListener("change", calculer);
+        })
+
+        function calculer(){
+            let CM = 0;
+            let TD = 0;
+            let TP = 0;
+
+            document.querySelectorAll(".module>input[name=CM]").forEach(e=>{ CM += parseFloat(e.value) })
+            document.querySelectorAll(".module>input[name=TD]").forEach(e=>{ TD += parseFloat(e.value) })
+            document.querySelectorAll(".module>input[name=TP]").forEach(e=>{ TP += parseFloat(e.value) })
+
+            document.querySelector(".totaux>.CM").innerText = CM + 'h';
+            document.querySelector(".totaux>.TD").innerText = TD + 'h';
+            document.querySelector(".totaux>.TP").innerText = TP + 'h';
+        }
+    </script>
 </body>
 </html>
