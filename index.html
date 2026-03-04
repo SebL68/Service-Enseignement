@@ -1,71 +1,336 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service prévisionnel</title>
     <style>
-        .module {
+        body {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
             background: #f0f0f0;
+            margin: 0;
+        }
+
+        header {
+            display: flex;
+            background: #09c;
+            color: #fff;
+            padding-left: 32px;
+        }
+
+        main {
+            padding: 16px 32px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .module {
+            position: relative;
+            background: #fff;
             padding: 4px;
             border-radius: 4px;
             width: fit-content;
             margin-bottom: 4px;
+            display: flex;
+            gap: 4px;
         }
+
+        .deplacer {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
         [type=number] {
             width: 40px;
         }
+
+        .add {
+            width: 200px;
+            background: #0c9;
+            color: #fff;
+            height: 20px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+
+        }
+
+        .add:hover {
+            outline: 1px solid #aaa;
+            color: #000;
+        }
+
+        .totaux,
+        .totauxHors,
+        .totauxDans {
+            background: #c09;
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 4px;
+            width: fit-content;
+
+        }
+
+        .totauxHors,
+        .totauxDans {
+            background: #fff;
+            color: #000;
+            border: 1px solid #aaa;
+        }
+
+        details {
+            background: #fff;
+            padding: 4px 16px;
+            border-radius: 4px;
+            margin: 4px 0;
+        }
+
+        .deplacer {
+            cursor: grab;
+        }
+
+        .deplacer:active {
+            cursor: grabbing;
+        }
+
+        .suppr {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            width: 16px;
+            height: 16px;
+            border-radius: 100%;
+            background-color: rgb(199, 0, 0);
+            color: #FFF;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        hr {
+            margin-top: 32px;
+        }
+
+        .flex {
+            display: flex;
+            gap: 32px;
+            align-items: flex-start;
+        }
+
+        summary {
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
+    <header>
+        <h1>Service d'enseignement</h1>
+    </header>
     <main>
 
-        <div class="modules">
-            <div class="module">
-                <input type="text">
-                <input type="number" min="0" value="0" name="CM">
-                <input type="number" min="0" value="0" name="TD">
-                <input type="number" min="0" value="0" name="TP">
-            </div>
-            <div class="module">
-                <input type="text">
-                <input type="number" min="0" value="0" name="CM">
-                <input type="number" min="0" value="0" name="TD">
-                <input type="number" min="0" value="0" name="TP">
-            </div>
-            <div class="module">
-                <input type="text">
-                <input type="number" min="0" value="0" name="CM">
-                <input type="number" min="0" value="0" name="TD">
-                <input type="number" min="0" value="0" name="TP">
-            </div>
+        <div class="configuration">
+            Nom de l'agent <input value="Jean Bon"><br>
+            Service statutaire <input type="number" value="192" name="limite">
         </div>
 
+        <h2>Dans la composante d'affectation</h2>
+        <div class="flex">
+            <div>
+                <div class="modules dans"></div>
+                <div class="add">+</div>
+            </div>
+            <div>
+                <div class="totauxDans">
+                    <div class="CM"></div>
+                    <div class="TD"></div>
+                    <div class="TP"></div>
+                </div>
+                <details>
+                    <summary>Infos</summary>
+                    1h CM = 1,5h TD<br>
+                    1h TD = 1h TD<br>
+                    1h TP = 1h TD
+                </details>
+            </div>
+
+        </div>
+
+
+
+        <hr>
+        <h2>En dehors de la composante d'affectation</h2>
+        <div class="flex">
+            <div>
+                <div class="modules hors"></div>
+                <div class="add">+</div>
+            </div>
+            <div>
+                <div class="totauxHors">
+                    <div class="CM"></div>
+                    <div class="TD"></div>
+                    <div class="TP"></div>
+                </div>
+                <details>
+                    <summary>Infos</summary>
+                    Hors composante<br>
+                    1h TP = 0.67h TD
+                </details>
+            </div>
+
+        </div>
+
+
+        <hr>
+        <h2>Totaux</h2>
         <div class="totaux">
-            <div class="CM"></div>
-            <div class="TD"></div>
-            <div class="TP"></div>
+            <div class="totHeures"></div>
+            <div class="totHeuresETD"></div>
+            <div class="HS"></div>
+        </div>
+        <details>
+            <summary>!!! Infos !!!</summary>
+            A vérifier comment calculer les HS à payer
+        </details>
+        <hr>
+        <h2>Actions</h2>
+        <div>
+            <button>Imprimer pour signature</button>
+            <button>Validation par la composante</button>
         </div>
 
     </main>
     <script>
-        document.querySelectorAll(".module>input").forEach(e=>{
-            e.addEventListener("change", calculer);
-        })
 
-        function calculer(){
-            let CM = 0;
-            let TD = 0;
-            let TP = 0;
+        let dataDans = [
+            {
+                nom: "R101",
+                CM: 10,
+                TD: 8,
+                TP: 20
+            },
+            {
+                nom: "R102",
+                CM: 2,
+                TD: 10,
+                TP: 16
+            },
+            {
+                nom: "R103",
+                CM: 0,
+                TD: 16,
+                TP: 8
+            }
+        ];
+        let dataHors = [
+            {
+                nom: "FST - R101",
+                CM: 10,
+                TD: 8,
+                TP: 20
+            },
+            {
+                nom: "FST - R102",
+                CM: 2,
+                TD: 10,
+                TP: 16
+            },
+            {
+                nom: "FST - R103",
+                CM: 0,
+                TD: 16,
+                TP: 8
+            }
+        ];
 
-            document.querySelectorAll(".module>input[name=CM]").forEach(e=>{ CM += parseFloat(e.value) })
-            document.querySelectorAll(".module>input[name=TD]").forEach(e=>{ TD += parseFloat(e.value) })
-            document.querySelectorAll(".module>input[name=TP]").forEach(e=>{ TP += parseFloat(e.value) })
+        document.querySelector(".configuration>[name=limite]").addEventListener("change", calculer);
+        document.querySelectorAll(".add").forEach(e => { e.addEventListener("click", add); });
 
-            document.querySelector(".totaux>.CM").innerText = CM + 'h';
-            document.querySelector(".totaux>.TD").innerText = TD + 'h';
-            document.querySelector(".totaux>.TP").innerText = TP + 'h';
+        setData();
+
+        function setData() {
+            dataDans.forEach(d => {
+                document.querySelector(".modules.dans").appendChild(vueModule(d));
+            })
+            dataHors.forEach(d => {
+                document.querySelector(".modules.hors").appendChild(vueModule(d));
+            })
+
+            calculer();
+        }
+
+        function add() {
+            this.previousElementSibling.appendChild(vueModule({ nom: "", CM: 0, TD: 0, TP: 0 }));
+        }
+
+        function calculer() {
+            let CMDans = 0;
+            let TDDans = 0;
+            let TPDans = 0;
+            let CMHors = 0;
+            let TDHors = 0;
+            let TPHors = 0;
+            let limite = document.querySelector(".configuration>input[name=limite]").value;
+
+            document.querySelectorAll(".dans input[name=CM]").forEach(e => { CMDans += parseFloat(e.value) })
+            document.querySelectorAll(".dans input[name=TD]").forEach(e => { TDDans += parseFloat(e.value) })
+            document.querySelectorAll(".dans input[name=TP]").forEach(e => { TPDans += parseFloat(e.value) })
+
+            document.querySelectorAll(".hors input[name=CM]").forEach(e => { CMHors += parseFloat(e.value) })
+            document.querySelectorAll(".hors input[name=TD]").forEach(e => { TDHors += parseFloat(e.value) })
+            document.querySelectorAll(".hors input[name=TP]").forEach(e => { TPHors += parseFloat(e.value) })
+
+            let CMDansETD = CMDans * 1.5;
+            let TDDansETD = TDDans;
+            let TPDansETD = TPDans;
+
+            document.querySelector(".totauxDans>.CM").innerText = `CM : ${CMDans}h --> CM HETD : ${CMDansETD}`;
+            document.querySelector(".totauxDans>.TD").innerText = `TD : ${TDDans}h --> TD HETD : ${TDDansETD}`;
+            document.querySelector(".totauxDans>.TP").innerText = `TP : ${TPDans}h --> TP HETD : ${TPDansETD}`;
+
+            let CMHorsETD = CMHors * 1.5;
+            let TDHorsETD = TDHors;
+            let TPHorsETD = roundFloat(TPHors / 1.5);
+
+            document.querySelector(".totauxHors>.CM").innerText = `CM : ${CMHors}h --> CM HETD : ${CMHorsETD}`;
+            document.querySelector(".totauxHors>.TD").innerText = `TD : ${TDHors}h --> TD HETD : ${TDHorsETD}`;
+            document.querySelector(".totauxHors>.TP").innerText = `TP : ${TPHors}h --> TP HETD : ${TPHorsETD}`;
+
+            document.querySelector(".totaux>.totHeures").innerText = 'Total heures : ' + roundFloat(CMDans + TDDans + TPDans + CMHors + TDHors + TPHors) + 'h';
+            document.querySelector(".totaux>.totHeuresETD").innerText = 'Total HETD : ' + roundFloat(CMDansETD + TDDansETD + TPDansETD + CMHorsETD + TDHorsETD + TPHorsETD) + 'h';
+            document.querySelector(".totaux>.HS").innerText = 'HS à payer : ' + roundFloat(CMDansETD + TDDansETD + TPDansETD + CMHorsETD + TDHorsETD + TPHorsETD - limite) + 'h';
+        }
+
+        function vueModule(d) {
+            let module = document.createElement("div");
+            module.className = "module";
+            module.innerHTML = `
+                <div class="module">
+                    <div class="deplacer">||</div>
+                    Nom<input type="text" value="${d.nom}">
+                    CM<input type="number" min="0" value="${d.CM}" name="CM">
+                    TD<input type="number" min="0" value="${d.TD}" name="TD">
+                    TP<input type="number" min="0" value="${d.TP}" name="TP">
+
+                    <div class=suppr>x</div>
+                </div>`;
+
+            module.querySelectorAll("input").forEach(e => { e.addEventListener("change", calculer) });
+            module.querySelector(".suppr").addEventListener("click", suppr);
+
+            return module;
+        }
+
+        function suppr() {
+            this.closest(".module").remove();
+            calculer();
+        }
+
+        function roundFloat(nb) {
+            return Math.round(100 * nb) / 100;
         }
     </script>
 </body>
+
 </html>
